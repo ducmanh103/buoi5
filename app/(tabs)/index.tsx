@@ -1,98 +1,144 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import React, { useState } from "react";
+import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+export default function SignIn() {
+  const [phone, setPhone] = useState("");
+  const [error, setError] = useState("");
 
-export default function HomeScreen() {
+  // Validate
+  const validatePhone = (value: string) => {
+    const regex = /^(0|\+84)[0-9]{9}$/;
+    return regex.test(value);
+  };
+
+  // Format
+  const formatPhone = (text: string) => {
+    const cleaned = text.replace(/\D/g, "");
+    const match = cleaned.match(/^(\d{0,3})(\d{0,3})(\d{0,4})$/);
+    if (match) return [match[1], match[2], match[3]].filter(Boolean).join(" ");
+    return text;
+  };
+
+  const handleChange = (text: string) => {
+    const formatted = formatPhone(text);
+    setPhone(formatted);
+
+    // bỏ khoảng trắng để validate
+    const raw = formatted.replace(/\s/g, "");
+
+    if (!validatePhone(raw) && raw.length > 0) {
+      setError("Số điện thoại không hợp lệ");
+    } else {
+      setError("");
+    }
+  };
+
+  const handleContinue = () => {
+    const raw = phone.replace(/\s/g, "");
+
+    if (!validatePhone(raw)) {
+      setError("Số điện thoại không đúng định dạng");
+
+      // 🔥 Popup giống hình
+      Alert.alert(
+        "Thông báo",
+        "Số điện thoại không đúng định dạng. Vui lòng nhập lại",
+        [{ text: "OK" }]
+      );
+
+      return;
+    }
+
+    Alert.alert("Thành công", "Số điện thoại hợp lệ!");
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <View style={styles.container}>
+      <Text style={styles.header}>Đăng nhập</Text>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      <View style={styles.card}>
+        <Text style={styles.label}>Nhập số điện thoại</Text>
+        <Text style={styles.sub}>
+          Dùng số điện thoại để đăng nhập hoặc đăng ký tài khoản OneHousing Pro
+        </Text>
+
+        <TextInput
+          placeholder="Nhập số điện thoại của bạn"
+          keyboardType="phone-pad"
+          value={phone}
+          onChangeText={handleChange}
+          style={styles.input}
+        />
+
+        {error ? <Text style={styles.error}>{error}</Text> : null}
+      </View>
+
+      <TouchableOpacity
+        style={[styles.button, error ? { opacity: 0.6 } : {}]}
+        onPress={handleContinue}
+      >
+        <Text style={styles.btnText}>Tiếp tục</Text>
+      </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    backgroundColor: "#f4f4f4",
+    paddingHorizontal: 16,
+    paddingTop: 50,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+
+  header: {
+    fontSize: 28,
+    fontWeight: "bold",
+    marginBottom: 20,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+
+  card: {
+    backgroundColor: "#fff",
+    padding: 16,
+    borderRadius: 12,
+    elevation: 2,
+  },
+
+  label: {
+    fontSize: 18,
+    fontWeight: "600",
+  },
+
+  sub: {
+    marginTop: 4,
+    color: "#666",
+    fontSize: 14,
+    marginBottom: 12,
+  },
+
+  input: {
+    borderBottomWidth: 1,
+    borderColor: "#ccc",
+    paddingVertical: 10,
+    fontSize: 16,
+  },
+
+  error: {
+    color: "red",
+    marginTop: 6,
+  },
+
+  button: {
+    marginTop: 24,
+    backgroundColor: "#1A1AFF",
+    padding: 16,
+    borderRadius: 10,
+  },
+
+  btnText: {
+    color: "#fff",
+    textAlign: "center",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
