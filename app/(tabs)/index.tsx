@@ -1,21 +1,24 @@
 import React, { useState } from "react";
-import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TextInput, TouchableOpacity, View, Alert } from "react-native";
+import { router } from "expo-router";
 
 export default function SignIn() {
   const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
 
-  // Validate
   const validatePhone = (value: string) => {
     const regex = /^(0|\+84)[0-9]{9}$/;
     return regex.test(value);
   };
 
-  // Format
   const formatPhone = (text: string) => {
     const cleaned = text.replace(/\D/g, "");
     const match = cleaned.match(/^(\d{0,3})(\d{0,3})(\d{0,4})$/);
-    if (match) return [match[1], match[2], match[3]].filter(Boolean).join(" ");
+
+    if (match) {
+      return [match[1], match[2], match[3]].filter(Boolean).join(" ");
+    }
+
     return text;
   };
 
@@ -23,7 +26,6 @@ export default function SignIn() {
     const formatted = formatPhone(text);
     setPhone(formatted);
 
-    // bỏ khoảng trắng để validate
     const raw = formatted.replace(/\s/g, "");
 
     if (!validatePhone(raw) && raw.length > 0) {
@@ -39,7 +41,6 @@ export default function SignIn() {
     if (!validatePhone(raw)) {
       setError("Số điện thoại không đúng định dạng");
 
-      // 🔥 Popup giống hình
       Alert.alert(
         "Thông báo",
         "Số điện thoại không đúng định dạng. Vui lòng nhập lại",
@@ -49,7 +50,8 @@ export default function SignIn() {
       return;
     }
 
-    Alert.alert("Thành công", "Số điện thoại hợp lệ!");
+    // chuyển sang Home
+    router.push("/home");
   };
 
   return (
@@ -58,6 +60,7 @@ export default function SignIn() {
 
       <View style={styles.card}>
         <Text style={styles.label}>Nhập số điện thoại</Text>
+
         <Text style={styles.sub}>
           Dùng số điện thoại để đăng nhập hoặc đăng ký tài khoản OneHousing Pro
         </Text>
@@ -73,10 +76,7 @@ export default function SignIn() {
         {error ? <Text style={styles.error}>{error}</Text> : null}
       </View>
 
-      <TouchableOpacity
-        style={[styles.button, error ? { opacity: 0.6 } : {}]}
-        onPress={handleContinue}
-      >
+      <TouchableOpacity style={styles.button} onPress={handleContinue}>
         <Text style={styles.btnText}>Tiếp tục</Text>
       </TouchableOpacity>
     </View>
@@ -101,7 +101,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     padding: 16,
     borderRadius: 12,
-    elevation: 2,
   },
 
   label: {
